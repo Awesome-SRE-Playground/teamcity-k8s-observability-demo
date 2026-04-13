@@ -21,7 +21,7 @@ register.registerMetric(httpRequestCounter);
 // Routes
 app.get('/', (req, res) => {
   httpRequestCounter.inc();
-  res.send('🚀 DevOps Demo App Running!');
+  res.send('🚀 DevOpss Demo App Running!');
 });
 
 app.get('/health', (req, res) => {
