@@ -33,11 +33,14 @@ project {
 }
 
 object Build : BuildType({
-    name = "Build"
+    name = "CI/CD - Build & Deploy"
 
     params {
-        param("env.DOCKER_USERNAME", "alvishpatelhti")
+        param("env.DOCKER_USERNAME", "aelvishpatelhti")
+
         password("env.DOCKER_PASSWORD", "credentialsJSON:ea1ebc17-66a4-4b41-a0a0-4a011b4b2d8b")
+
+        password("env.KUBECONFIG_DATA", "credentialsJSON:ADD_YOUR_KUBECONFIG_SECRET_ID")
     }
 
     vcs {
@@ -45,48 +48,65 @@ object Build : BuildType({
     }
 
     steps {
+
+        script {
+            name = "Setup Kubeconfig"
+            scriptContent = """
+                echo "$KUBECONFIG_DATA" | base64 --decode > kubeconfig.yaml
+                export KUBECONFIG=$(pwd)/kubeconfig.yaml
+                
+                kubectl get nodes
+            """.trimIndent()
+        }
+
         script {
             name = "Install Dependencies"
-            id = "Install_Dependencies"
             scriptContent = """
                 set -e
                 cd app
                 npm install
             """.trimIndent()
         }
+
         script {
             name = "Build Docker Image"
-            id = "Build_Docker_Image"
-            scriptContent = "docker build -t ${'$'}DOCKER_USERNAME/devops-demo-app:%build.number% ./app"
+            scriptContent = """
+                docker build -t $DOCKER_USERNAME/devops-demo-app:%build.number% ./app
+            """.trimIndent()
         }
+
         script {
             name = "Docker Login"
-            id = "Docker_Login"
-            scriptContent = """echo "${'$'}DOCKER_PASSWORD" | docker login -u "${'$'}DOCKER_USERNAME" --password-stdin"""
+            scriptContent = """
+                echo "$DOCKER_PASSWORD" | docker login -u "$DOCKER_USERNAME" --password-stdin
+            """.trimIndent()
         }
+
         script {
             name = "Push Image"
-            id = "Push_Image"
-            scriptContent = "docker push ${'$'}DOCKER_USERNAME/devops-demo-app:%build.number%"
+            scriptContent = """
+                docker push $DOCKER_USERNAME/devops-demo-app:%build.number%
+            """.trimIndent()
         }
+
         script {
             name = "Deploy via Helm"
-            id = "Deploy_via_Helm"
             scriptContent = """
+                export KUBECONFIG=$(pwd)/kubeconfig.yaml
+
                 helm upgrade --install devops-demo ./devops-demo-chart \
                   -n demo-app \
+                  --create-namespace \
                   --set image.tag=%build.number%
             """.trimIndent()
         }
     }
 
     triggers {
-        vcs {
-        }
+        vcs {}
     }
 
     features {
-        perfmon {
-        }
+        perfmon {}
     }
 })
