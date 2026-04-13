@@ -1,6 +1,6 @@
 # 🚀 TeamCity + Kubernetes + Helm CI/CD Demo
 
-A production-style **CI/CD pipeline** using **TeamCity**, **Docker**, **Kubernetes**, and **Helm**.
+A production-style **CI/CD pipeline** using **TeamCity, Docker, Kubernetes, and Helm**.
 
 This project demonstrates how to automatically build, push, and deploy an application to Kubernetes using a fully automated pipeline defined as code.
 
@@ -8,17 +8,13 @@ This project demonstrates how to automatically build, push, and deploy an applic
 
 ## 🧠 Overview
 
-This project implements a complete CI/CD workflow:
-
-```
+```text
 GitHub → TeamCity → Docker → Kubernetes (Helm)
 ```
 
 * Code push triggers pipeline
 * Docker image is built & pushed
-* Application is deployed to Kubernetes using Helm
-
-> TeamCity is a CI/CD server used to automate build, test, and deployment workflows.
+* Application is deployed to Kubernetes
 
 ---
 
@@ -27,7 +23,7 @@ GitHub → TeamCity → Docker → Kubernetes (Helm)
 * CI/CD: TeamCity
 * Containerization: Docker
 * Orchestration: Kubernetes
-* Deployment: Helm
+* Deployment: Helm + Kubernetes manifests
 * Language: Node.js
 * Local Cluster: Docker Desktop Kubernetes
 
@@ -35,19 +31,35 @@ GitHub → TeamCity → Docker → Kubernetes (Helm)
 
 ## 📂 Project Structure
 
-```
+```text
 .
 ├── app/                     # Node.js application
-├── devops-demo-chart/      # Helm chart
-├── .teamcity/              # Pipeline as code (Kotlin DSL)
+├── devops-demo-chart/       # Helm chart (preferred deployment)
+├── k8s/                     # Raw Kubernetes manifests (alternative)
+├── .teamcity/               # Pipeline as code (Kotlin DSL)
 └── README.md
 ```
 
 ---
 
-## ⚙️ Prerequisites
+## 📦 Deployment Approaches
 
-Make sure you have:
+This project supports **2 deployment methods**:
+
+### 🔹 1. Helm (Used in CI/CD ✅)
+
+* Dynamic deployments
+* Version-controlled releases
+* Used in TeamCity pipeline
+
+### 🔹 2. Raw Kubernetes Manifests
+
+* Simple YAML-based deployment
+* Useful for learning/debugging
+
+---
+
+## ⚙️ Prerequisites
 
 * Docker installed
 * Kubernetes cluster (Docker Desktop / Minikube / Cloud)
@@ -62,8 +74,6 @@ Make sure you have:
 Go to:
 **Project → Parameters**
 
-Add:
-
 | Name                  | Description               |
 | --------------------- | ------------------------- |
 | `env.DOCKER_USERNAME` | Docker Hub username       |
@@ -72,25 +82,17 @@ Add:
 
 ---
 
-## 🔑 Generate Kubeconfig Secret
-
-Run:
+## 🔑 Generate Kubeconfig
 
 ```bash
 base64 ~/.kube/config | tr -d '\n'
-```
-
-Copy output → paste into:
-
-```
-env.KUBECONFIG_DATA
 ```
 
 ---
 
 ## 🚀 Setup Instructions
 
-### 1️⃣ Clone Repo
+### 1️⃣ Clone Repository
 
 ```bash
 git clone https://github.com/Awesome-SRE-Playground/teamcity-k8s-observability-demo.git
@@ -102,25 +104,23 @@ cd teamcity-k8s-observability-demo
 ### 2️⃣ Create Project in TeamCity
 
 * Go to TeamCity UI
-* Click **Create Project**
-* Use GitHub repo URL
+* Click **Create Project from URL**
+* Enter repository URL
 * Select:
 
-```
+```text
 Import settings from .teamcity/settings.kts
 ```
 
 ---
 
-### 3️⃣ Configure Secrets
+### 3️⃣ Add Secrets
 
-Add all required parameters in TeamCity UI.
+Add required parameters in TeamCity.
 
 ---
 
-### 4️⃣ Run Pipeline
-
-Push code:
+### 4️⃣ Trigger Pipeline
 
 ```bash
 git commit -am "trigger pipeline"
@@ -129,9 +129,7 @@ git push
 
 ---
 
-## ⚙️ Pipeline Flow
-
-The pipeline performs:
+## ⚙️ CI/CD Pipeline Flow
 
 1. Setup Kubernetes access (kubeconfig)
 2. Install dependencies
@@ -144,8 +142,6 @@ The pipeline performs:
 
 ## 📦 Helm Deployment
 
-The app is deployed using:
-
 ```bash
 helm upgrade --install devops-demo ./devops-demo-chart \
   -n demo-app \
@@ -153,7 +149,15 @@ helm upgrade --install devops-demo ./devops-demo-chart \
   --set image.tag=<build-number>
 ```
 
-Helm ensures reproducible deployments by versioning Kubernetes manifests. ([hoop.dev][2])
+---
+
+## 📄 Kubernetes Deployment (Alternative)
+
+Apply manually:
+
+```bash
+kubectl apply -f k8s/
+```
 
 ---
 
@@ -163,7 +167,7 @@ Helm ensures reproducible deployments by versioning Kubernetes manifests. ([hoop
 kubectl get svc -n demo-app
 ```
 
-OR (Minikube):
+OR:
 
 ```bash
 minikube service devops-demo-service -n demo-app
@@ -171,12 +175,23 @@ minikube service devops-demo-service -n demo-app
 
 ---
 
+
 ## 🧠 Key Learnings
 
-* CI/CD pipeline as code (Kotlin DSL)
-* Secure secret management
-* Docker image lifecycle
-* Helm-based deployments
-* Kubernetes debugging
+* CI/CD pipeline as code
+* Kubernetes deployments
+* Helm vs raw manifests
+* Secret management in CI/CD
+* Debugging real-world issues
+
+---
+
+## 🎯 Demo Flow
+
+1. Show running app
+2. Make code change
+3. Push to GitHub
+4. Pipeline runs
+5. App auto-updates
 
 ---
