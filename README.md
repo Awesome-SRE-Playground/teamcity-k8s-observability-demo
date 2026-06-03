@@ -1,4 +1,4 @@
-# 🚀 TeamCity + Kubernetes + Helm CI/CD Demo
+# TeamCity + Kubernetes + Helm CI/CD Demo
 
 A production-style **CI/CD pipeline** using **TeamCity, Docker, Kubernetes, and Helm**.
 
