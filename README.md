@@ -9,7 +9,7 @@ This project demonstrates how to automatically build, push, and deploy an applic
 ## 🧠 Overview
 
 ```text
-GitHub → TeamCity → Docker → Kubernetes (Helm)
+GitHub → TeamCity → Docker → Kubernetes (Helm).
 ```
 
 * Code push triggers pipeline
